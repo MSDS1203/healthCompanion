@@ -1,11 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { GeminiChatbot } from '../api/gemini';
 
 export default function ChatbotScreen() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+      <Text>AI Medical Consultant</Text>
       <StatusBar style="auto" />
+      <ScrollView>
+        <View>
+          <Text>
+            {GeminiChatbot("Tell me more about epileptic episodes.")}
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
