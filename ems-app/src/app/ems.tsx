@@ -1,20 +1,162 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState } from 'react';
+import EmergencyCard from '../components/NameOfEmergencyButton';
+
 
 export default function EmergencyScreen() {
+
+  type Question = {
+    id: string;
+    text: string;
+  };
+
+  type Emergency = {
+    id: string;
+    name: string;
+    questions: Question[];
+  };
+
+  const [selectedEmergency, setSelectedEmergency] = useState<Emergency | null>(null);
+
+  const emergencies = [
+    {
+      id: '1', name: "Cardiac Arrest", questions: [
+        { id: '1', text: 'Is the person unconscious?' },
+        { id: '2', text: 'Is the person breathing?' },
+        { id: '3', text: 'Is there no pulse?' },
+      ]
+    },
+    {
+      id: '2', name: "Stroke", questions: [
+        { id: '1', text: 'Is the face drooping on one side or numb? To test ask them to smile.' },
+        { id: '2', text: 'Is one arm weak or numb? When raising their hands does one arm drift down?' },
+        { id: '3', text: 'Is speech slurred? When asked to repeat a phrase, does the person have difficulty?' },
+      ]
+    },
+    {
+      id: '3', name: "Seizure/Epilepsy", questions: [
+        { id: '1', text: 'Is the person unconscious?' },
+        { id: '2', text: 'Is the person having difficulty breathing?' },
+        { id: '3', text: 'Are you able to move the person in the area safely?' },
+        { id: '4', text: 'Does the person have any medical identification?' },
+      ]
+    },
+    {
+      id: '4', name: "Allergic Reaction", questions: [
+        { id: '1', text: 'Is the person unconscious?' },
+        { id: '2', text: 'Does the person have a weak or rapid pulse?' },
+        { id: '2', text: 'Does the person have trouble breathing?' },
+        { id: '3', text: 'Does the person have pale, cool and clammy skin?' },
+      ]
+    },
+    {
+      id: '5', name: "Choking", questions: [
+        { id: '1', text: 'Is the person unconscious?' },
+        { id: '2', text: 'Is the person able to talk?' },
+        { id: '3', text: 'Does the person have noisy or strained breathing?' },
+        { id: '4', text: 'Is the person experiencing a change in color of the skin, lips and nails to blue or gray?' },
+        { id: '5', text: 'Is the person an infant?' },
+      ]
+    },
+    {
+      id: '6', name: "Other", questions: [
+        { id: '1', text: 'Is the person unconscious?' },
+        { id: '2', text: 'Does the person have a pulse?' },
+      ]
+    },
+    {
+      id: '7', name: "I Don't Know", questions: [
+        { id: '1', text: 'Is the person unconscious?' },
+        { id: '2', text: 'Does the person have a pulse?' },
+      ]
+    },
+  ];
+
+  if (selectedEmergency) {
+    return (
+      <View style={styles.fullScreenContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setSelectedEmergency(null)}
+        >
+          <Text style={styles.backButtonText}>← Back to Menu</Text>
+        </TouchableOpacity>
+
+        <View style={styles.focusedCard}>
+          <EmergencyCard
+            name={selectedEmergency.name}
+            questions={selectedEmergency.questions}
+          />
+        </View>
+      </View>
+    );
+  }
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        {emergencies.map((item, index) => {
+          const isLastItem = index === emergencies.length - 1;
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.cardWrapper, isLastItem && styles.fullWidth]}
+              onPress={() => setSelectedEmergency(item)}
+            >
+              <Text style={styles.cardTitle}>{item.name}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </ScrollView>
+
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    paddingVertical: 20,
+  },
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+  },
+  cardWrapper: {
+    width: '49%',
+    height:'49%',
+    backgroundColor: '#aed6ffff',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 15,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullWidth: {
+    width: '100%',
+  },
+  cardTitle: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  /* Styles for the "Question Mode" */
+  fullScreenContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  focusedCard: {
+    flex: 1,
+    marginTop: 20,
+  },
+  backButton: {
+    padding: 5,
+    backgroundColor: '#0b55a3ff',
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+  },
+  backButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
