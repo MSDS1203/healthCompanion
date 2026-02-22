@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { generateChecklist } from '../api/gemini';
+import Markdown from 'react-native-markdown-display';
 
 type Question = {
   id: string;
@@ -11,9 +13,11 @@ type EmergencyCardProps = {
   questions: Question[];
 };
 
-export default function EmergencyCard({name, questions }: EmergencyCardProps) {
-  const [expanded, setExpanded] = useState(true);
+export default function EmergencyCard({ name, questions }: EmergencyCardProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [checklistVisible, setChecklistVisible] = useState<boolean>(false);
+  const [geminiResponse, setGeminiResponse] = useState<string>("");
+
 
   const handleAnswer = (questionId: string, answer: string) => {
     setAnswers((prev) => ({
@@ -22,20 +26,19 @@ export default function EmergencyCard({name, questions }: EmergencyCardProps) {
     }));
   };
 
-  const handleSubmit = () => {
-  // add logic for submit through gemini
+  // Call API
+  const handleSubmit = async () => {
+    const response = await generateChecklist({ emergencyType: name, answers });
+    setChecklistVisible(true);
+    setGeminiResponse(response ?? "");
   };
 
   return (
-    <View style={styles.card}>
-      <TouchableOpacity onPress={() => setExpanded(!expanded)}>
-        <Text style={styles.title}>{name}</Text>
-      </TouchableOpacity>
-
-      {expanded && (
+    <View >
+      {!checklistVisible ?
         <View style={styles.questionsContainer}>
           {questions.map((q) => (
-            <View key={q.id} style={styles.questionBlock}>
+            <View key={q.id} style={styles.card}>
               <Text style={styles.questionText}>{q.text}</Text>
 
               <View style={styles.buttonRow}>
@@ -62,11 +65,18 @@ export default function EmergencyCard({name, questions }: EmergencyCardProps) {
             </View>
           ))}
         </View>
-      )}
+        : <Markdown style={{
+            body: { color: 'white' }
+          }}>
+            {geminiResponse}
+          </Markdown>
+      }
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
-    </TouchableOpacity>
+      {!checklistVisible ?
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitButtonText}>SUBMIT</Text>
+        </TouchableOpacity>
+        : null}
     </View>
   );
 }
@@ -90,6 +100,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   questionText: {
+    fontSize: 20,
+    lineHeight: 20,
     marginBottom: 5,
     textAlign: 'center',
   },
@@ -112,16 +124,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7c5c5',
   },
   submitButton: {
-    padding: 10,
-    backgroundColor: '#0b55a3ff',
+    padding: 20,
+    backgroundColor: '#E7ECEF',
     borderRadius: 5,
-    alignSelf: 'flex-end',
+    alignSelf: 'stretch',
   },
 
   submitButtonText: {
-    color: 'white',
+    color: '#274C77',
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    alignSelf: 'flex-end',
   },
 });
