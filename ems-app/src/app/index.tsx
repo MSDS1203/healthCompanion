@@ -1,21 +1,8 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { StyleSheet, View, Pressable, Button } from 'react-native';
+import { StyleSheet, View, Pressable, Button, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { createAudioPlayer } from 'expo-audio';
-
 export default function HomeScreen() {
-  const playAudio = async () => {
-    try {
-      const player = createAudioPlayer(
-        `http://${process.env.EXPO_PUBLIC_IP}:8000/generate-audio`
-      );
-
-      await player.play();
-    } catch (error) {
-      console.error('Error playing audio:', error);
-    }
-  };
 
     const router = useRouter();
   

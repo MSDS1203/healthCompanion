@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-native-markdown-display'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams } from 'expo-router';
+import { createAudioPlayer } from 'expo-audio';
 
 type Message = {
   message: string;
@@ -12,6 +13,39 @@ type Message = {
 }
 
 export default function ChatbotScreen() {
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  
+  const audioPlayerRef = useRef<any>(null);
+  const readAloud = async (text: string) => {
+    if (!voiceEnabled || !text.trim()) return;
+    try {
+      const cleanText = text.replace(/[*#_~]/g, '');
+
+      const shortText = cleanText.length > 500 
+      ? cleanText.substring(0, 500) + "..." 
+      : cleanText;
+
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_IP}:8000/generate-audio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: shortText }),
+      });
+
+      const data = await response.json();
+
+    if (data.audio) {
+      const player = createAudioPlayer(`data:audio/mpeg;base64,${data.audio}`);
+      audioPlayerRef.current = player; 
+      if (voiceEnabled) {
+        player.play();
+      }
+    }
+    } catch (error) {
+      console.error("Audio error:", error);
+    }
+  };
 
   const { search } = useLocalSearchParams<{ search?: string }>();
   console.log(search);
@@ -31,6 +65,7 @@ export default function ChatbotScreen() {
       const result: Message = { message: message ?? "", isUser: false };
       setResponses(prev => [...prev, result]);
 
+      readAloud(result.message);
       setThinking(false);
     } catch (error) {
       setErrorIsVisible(true);
@@ -77,6 +112,20 @@ export default function ChatbotScreen() {
                   </View>
                 </View>
                 : <View>
+                  <Ionicons
+                  name={voiceEnabled ? "volume-medium-outline" : "volume-mute-outline"}
+                  size={24}
+                  color="white"
+                  onPress={() => {
+                  if (voiceEnabled) {
+                    audioPlayerRef.current?.pause(); 
+                  }
+                  else{
+                    audioPlayerRef.current?.play();
+                  }
+                  setVoiceEnabled(!voiceEnabled);
+                  }}
+                  />              
                   <Markdown style={{
                     body: { color: 'white' }
                   }}
