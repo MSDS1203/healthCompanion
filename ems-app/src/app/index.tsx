@@ -8,7 +8,7 @@ export default function HomeScreen() {
   
   return (
     <View style={styles.container}>
-      <Text>Welcome to your emergency response companion</Text>
+      <Text style={{color: '#fff'}}>Welcome to your emergency response companion</Text>
       <Pressable 
         style={styles.emergencyBtn}
         onPress={() => {router.push("/ems")}}
@@ -35,11 +35,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#274C77',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 20,
-    margin: 20,
+    padding: 20,
   },
   emergencyBtn: {
     justifyContent: 'center',
@@ -56,12 +56,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   moreInfoBtn: {
-    backgroundColor: '#AAE0FA',
+    backgroundColor: '#A3CEF1',
     borderRadius: 20,
     padding: 20,
   },
   infoFont: {
-    color: '#021552',
+    color: '#274C77',
     fontSize: 20,
   }
 });
