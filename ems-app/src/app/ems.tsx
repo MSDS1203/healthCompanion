@@ -1,9 +1,13 @@
-import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { ScrollView, View, StyleSheet, TouchableOpacity, Text, Pressable, Platform } from 'react-native';
 import React, { useState } from 'react';
 import EmergencyCard from '../components/NameOfEmergencyButton';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
 
 
 export default function EmergencyScreen() {
+  const router = useRouter();
 
   type Question = {
     id: string;
@@ -45,8 +49,8 @@ export default function EmergencyScreen() {
       id: '4', name: "Allergic Reaction", questions: [
         { id: '1', text: 'Is the person unconscious?' },
         { id: '2', text: 'Does the person have a weak or rapid pulse?' },
-        { id: '2', text: 'Does the person have trouble breathing?' },
-        { id: '3', text: 'Does the person have pale, cool and clammy skin?' },
+        { id: '3', text: 'Does the person have trouble breathing?' },
+        { id: '4', text: 'Does the person have pale, cool and clammy skin?' },
       ]
     },
     {
@@ -74,25 +78,26 @@ export default function EmergencyScreen() {
 
   if (selectedEmergency) {
     return (
-      <View style={styles.fullScreenContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setSelectedEmergency(null)}
-        >
-          <Text style={styles.backButtonText}>← Back to Menu</Text>
-        </TouchableOpacity>
-
-        <View style={styles.focusedCard}>
-          <EmergencyCard
-            name={selectedEmergency.name}
-            questions={selectedEmergency.questions}
-          />
+      <SafeAreaView style={{flex: 1}}>
+        <View style={styles.titleBar}>
+          <Pressable onPress={() => setSelectedEmergency(null)}>
+            <Ionicons name="arrow-back-outline" style={styles.titleIcon} size={30} color="#fff" />
+          </Pressable>
+          <Text style={styles.title}>{selectedEmergency.name}</Text>
         </View>
-      </View>
+        <View style={styles.fullScreenContainer}>
+          <View style={styles.focusedCard}>
+            <EmergencyCard
+              name={selectedEmergency.name}
+              questions={selectedEmergency.questions}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
     );
   }
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <SafeAreaView style={styles.fullScreenContainer}>
       <View style={styles.container}>
         {emergencies.map((item, index) => {
           const isLastItem = index === emergencies.length - 1;
@@ -107,25 +112,54 @@ export default function EmergencyScreen() {
           );
         })}
       </View>
-    </ScrollView>
-
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
+  fullScreenContainer: {
+    flex: 1,
+    padding: 30,
+    backgroundColor: '#274C77',
+  },
+  title: {
+    flex: 1,
+    color: "#fff",
+    fontSize: 25,
+    textAlign: 'center',
+  },
+  titleIcon: {
+    marginRight: 'auto',
+  },
+  titleBar: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#6096BA',
+    paddingHorizontal: 20,
     paddingVertical: 20,
+    // Shadows
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
   },
   cardWrapper: {
     width: '49%',
-    height:'49%',
-    backgroundColor: '#aed6ffff',
+    height: '28%',
+    backgroundColor: '#A3CEF1',
     borderRadius: 12,
     padding: 20,
     marginBottom: 15,
@@ -134,24 +168,21 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
+    backgroundColor: '#E7ECEF',
   },
   cardTitle: {
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 25,
   },
   /* Styles for the "Question Mode" */
-  fullScreenContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
   focusedCard: {
     flex: 1,
     marginTop: 20,
   },
   backButton: {
     padding: 5,
-    backgroundColor: '#0b55a3ff',
+    backgroundColor: '#274C77',
     borderRadius: 5,
     alignSelf: 'flex-start',
   },

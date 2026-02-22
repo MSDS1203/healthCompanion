@@ -1,10 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { FlatList, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Platform, KeyboardAvoidingView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
 import { GeminiChatbot } from '../api/gemini';
 import { useEffect, useRef, useState } from 'react';
-import Markdown from 'react-native-markdown-display'
+import Markdown from 'react-native-markdown-display';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { createAudioPlayer } from 'expo-audio';
 
 type Message = {
@@ -13,6 +14,7 @@ type Message = {
 }
 
 export default function ChatbotScreen() {
+  const router = useRouter();
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   
   const audioPlayerRef = useRef<any>(null);
@@ -93,76 +95,84 @@ export default function ChatbotScreen() {
 
 
   return (
-    <>
-      <View style={styles.titleBar}>
-        <Text style={styles.title}>AI Medical Consultant</Text>
-      </View>
-      <View style={styles.container}>
-        <FlatList
-          data={responses}
-          ref={scrollRef}
-          renderItem={({ item, index }) => {
-            return (
-              item.isUser
-                ? <View style={styles.user}>
-                  <View style={styles.textBubble}>
-                    <Text>{item.message}</Text>
-                    <View style={styles.rightArrow} />
-                    <View style={styles.rightArrowOverlap} />
+    <SafeAreaView style={{ flex: 1 }}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.titleBar}>
+          <Pressable onPress={() => {router.push("/")}}>
+            <Ionicons name="arrow-back-outline" style={styles.titleIcon} size={30} color="#fff" />
+          </Pressable>
+          <Text style={styles.title}>AI Medical Consultant</Text>
+        </View>
+        <View style={styles.container}>
+          <FlatList
+            data={responses}
+            ref={scrollRef}
+            renderItem={({ item, index }) => {
+              return (
+                item.isUser
+                  ? <View style={styles.user}>
+                    <View style={styles.textBubble}>
+                      <Text>{item.message}</Text>
+                      <View style={styles.rightArrow} />
+                      <View style={styles.rightArrowOverlap} />
+                    </View>
                   </View>
-                </View>
-                : <View>
-                  <Ionicons
-                  name={voiceEnabled ? "volume-medium-outline" : "volume-mute-outline"}
-                  size={24}
-                  color="white"
-                  onPress={() => {
-                  if (voiceEnabled) {
-                    audioPlayerRef.current?.pause(); 
-                  }
-                  else{
-                    audioPlayerRef.current?.play();
-                  }
-                  setVoiceEnabled(!voiceEnabled);
-                  }}
+                  : <View>
+                    <Ionicons
+                    name={voiceEnabled ? "volume-medium-outline" : "volume-mute-outline"}
+                    size={24}
+                    color="white"
+                    onPress={() => {
+                    if (voiceEnabled) {
+                      audioPlayerRef.current?.pause(); 
+                    }
+                    else{
+                      audioPlayerRef.current?.play();
+                    }
+                    setVoiceEnabled(!voiceEnabled);
+                    }}
                   />              
                   <Markdown style={{
-                    body: { color: 'white' }
-                  }}
-                  >
-                    {item.message}
-                  </Markdown>
-                </View>
-            );
-          }}
-          keyExtractor={(_, index) => index.toString()}
-          ItemSeparatorComponent={() => <View style={styles.spacer} />}
-        />
-        {
-          errorIsVisible
-            ? <Text style={styles.botText}>I am having difficulty. Please try again.</Text>
-            : null
-        }
-        {
-          thinking
-            ? <Text style={styles.botText}>Loading. . .</Text>
-            : null
-        }
-      </View>
-      <View style={styles.searchBar}>
-        <Ionicons name="chatbubble-ellipses" size={24} color="#274C77" />
-        <TextInput
-          style={styles.input}
-          onChangeText={setInputValue}
-          value={inputValue}
-          placeholder="Ask your AI medical consultant..."
-          onSubmitEditing={() => {
-            fetchResponse(inputValue);
-            setInputValue("Ask your AI medical consultant...");
-          }}
-        />
-      </View>
-    </>
+                      body: { color: 'white' }
+                    }}
+                    >
+                      {item.message}
+                    </Markdown>
+                  </View>
+              );
+            }}
+            keyExtractor={(_, index) => index.toString()}
+            ItemSeparatorComponent={() => <View style={styles.spacer} />}
+          />
+          {
+            errorIsVisible
+              ? <Text style={styles.botText}>I am having difficulty. Please try again.</Text>
+              : null
+          }
+          {
+            thinking
+              ? <Text style={styles.botText}>Loading. . .</Text>
+              : null
+          }
+        </View>
+        <View style={styles.searchBar}>
+          <Ionicons name="chatbubble-ellipses" size={24} color="#274C77" />
+          <TextInput
+            style={styles.input}
+            onChangeText={setInputValue}
+            value={inputValue}
+            placeholder="Ask your AI medical consultant..."
+            onSubmitEditing={() => {
+              fetchResponse(inputValue);
+              setInputValue("");
+            }}
+          />
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -171,30 +181,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#274C77',
     alignItems: 'stretch',
-    justifyContent: 'center',
     padding: 30,
   },
   title: {
+    flex: 1,
     color: "#fff",
     fontSize: 25,
     textAlign: 'center',
   },
+  titleIcon: {
+    marginRight: 'auto',
+  },
   titleBar: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#6096BA',
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     paddingVertical: 20,
     // Shadows
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 }, 
+        shadowOffset: { width: 0, height: 2 },
         shadowRadius: 3,
       },
       android: {
-        elevation: 5, 
+        elevation: 5,
       },
     }),
-  
   },
   botText: {
     color: '#fff',
@@ -228,7 +244,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 20,
   },
-    rightArrow: {
+  rightArrow: {
     position: "absolute",
     backgroundColor: "#E7ECEF",
     width: 20,
