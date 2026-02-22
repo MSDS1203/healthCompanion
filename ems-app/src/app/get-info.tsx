@@ -14,6 +14,10 @@ export default function InfoScreen() {
       search: "Cardiac Arrest",
     },
     {
+      title: 'Stroke',
+      search: "Stroke"
+    },
+    {
       title: 'Allergic Reaction',
       search: "Anaphylaxis",
     },
