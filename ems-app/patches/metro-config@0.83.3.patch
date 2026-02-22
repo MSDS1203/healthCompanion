@@ -1,0 +1,22 @@
+diff --git a/src/loadConfig.js b/src/loadConfig.js
+index 7ac9d88404063ce86d8c15a91ce72c439b455075..1000fea732921f0878e64ce892c8b72c9d16b7bb 100644
+--- a/src/loadConfig.js	
++++ b/src/loadConfig.js	
+@@ -13,6 +13,7 @@ var fs = _interopRequireWildcard(require("fs"));
+ var _jestValidate = require("jest-validate");
+ var MetroCache = _interopRequireWildcard(require("metro-cache"));
+ var _os = require("os");
++var _url = require("url");
+ var path = _interopRequireWildcard(require("path"));
+ var _yaml = require("yaml");
+ function _getRequireWildcardCache(e) {
+@@ -279,7 +280,8 @@ async function loadConfigFile(absolutePath) {
+   const extension = path.extname(absolutePath);
+   if (JS_EXTENSIONS.has(extension) || TS_EXTENSIONS.has(extension)) {
+     try {
+-      const configModule = require(absolutePath);
++      const importPath = process.platform === 'win32' ? (0, _url.pathToFileURL)(absolutePath).href : absolutePath;
++      const configModule = await import(importPath);
+       if (absolutePath.endsWith(PACKAGE_JSON)) {
+         config = configModule[PACKAGE_JSON_PROP_NAME];
+       } else {

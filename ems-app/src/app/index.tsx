@@ -1,10 +1,23 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View, Button } from 'react-native';
+import { createAudioPlayer } from 'expo-audio';
 
 export default function HomeScreen() {
+  const playAudio = async () => {
+    try {
+      const player = createAudioPlayer(
+        `http://${process.env.EXPO_PUBLIC_IP}:8000/generate-audio`
+      );
+
+      await player.play();
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+      <Button title="Play audio" onPress={playAudio} />
       <StatusBar style="auto" />
     </View>
   );
