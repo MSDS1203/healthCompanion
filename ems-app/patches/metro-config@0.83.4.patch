@@ -1,0 +1,14 @@
+diff --git a/src/loadConfig.js b/src/loadConfig.js
+index b1ea4f9ad9f77129d5f0f132f4a8a707e0bc4564..a5cd8b6217f18e891d912d775435407324ef99ab 100644
+--- a/src/loadConfig.js	
++++ b/src/loadConfig.js	
+@@ -291,7 +291,8 @@ async function loadConfigFile(absolutePath) {
+   const extension = path.extname(absolutePath);
+   if (JS_EXTENSIONS.has(extension) || TS_EXTENSIONS.has(extension)) {
+     try {
+-      const configModule = require(absolutePath);
++      const importPath = process.platform === 'win32' ? (0, _url.pathToFileURL)(absolutePath).href : absolutePath;
++      const configModule = await import(importPath);
+       if (absolutePath.endsWith(PACKAGE_JSON)) {
+         config = configModule[PACKAGE_JSON_PROP_NAME];
+       } else {

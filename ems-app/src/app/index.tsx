@@ -1,10 +1,11 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
+import { StyleSheet, View, Pressable, Image, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function HomeScreen() {
+
     const router = useRouter();
   
   return (
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#274C77',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 20,
+  gap: 20,
     padding: 20,
   },
   image: {
