@@ -1,5 +1,5 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,12 +9,18 @@ export default function HomeScreen() {
   
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={{color: '#fff'}}>Welcome to your emergency response companion</Text>
+      <View>
+        <Image
+        source={require('../../assets/vital-logo.png')}
+        style={styles.image}
+        />
+        <Text style={styles.bodyText}>Welcome to VITAL, your emergency care companion</Text>
+      </View>
       <Pressable 
         style={styles.emergencyBtn}
         onPress={() => {router.push("/ems")}}
       >
-        <MaterialCommunityIcons name="alert-decagram" size={35} color="white" />        
+        <MaterialCommunityIcons name="alert-decagram" size={60} color="white" />        
         <Text style={styles.emergencyFont}>EMERGENCY</Text>
       </Pressable>
       <Pressable 
@@ -42,27 +48,41 @@ const styles = StyleSheet.create({
     gap: 20,
     padding: 20,
   },
+  image: {
+    width: 150,
+    resizeMode: 'contain',
+    margin: "auto",
+  },
+  bodyText: {
+    color: '#fff',
+    fontSize: 20,
+    lineHeight: 25,
+    textAlign: 'center',
+  },
   emergencyBtn: {
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
     backgroundColor: '#CF0624',
-    height: '50%',
+    height: '40%',
     width: '100%',
     borderRadius: 20,
   },
   emergencyFont: {
     color: '#fff',
-    fontSize: 30,
+    fontSize: 40,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   moreInfoBtn: {
     backgroundColor: '#A3CEF1',
     borderRadius: 20,
     padding: 20,
+    width: '100%',
   },
   infoFont: {
     color: '#274C77',
     fontSize: 20,
+    textAlign: 'center',
   }
 });
