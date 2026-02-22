@@ -1,13 +1,14 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function HomeScreen() {
     const router = useRouter();
   
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={{color: '#fff'}}>Welcome to your emergency response companion</Text>
       <Pressable 
         style={styles.emergencyBtn}
@@ -28,7 +29,7 @@ export default function HomeScreen() {
       >
         <Text style={styles.infoFont}>Go to Chatbot</Text>
       </Pressable>
-    </View>
+    </SafeAreaView>
   );
 }
 

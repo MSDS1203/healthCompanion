@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, FlatList, Pressable, TextInput } from 'react-na
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function InfoScreen() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function InfoScreen() {
   }
 
   return (
-    <>
+    <SafeAreaView>
       <View style={styles.container}>
         <Text>Explore emergency response information and aid!</Text>
         <View style={styles.spacer} />
@@ -69,7 +70,7 @@ export default function InfoScreen() {
           onSubmitEditing={handleSearch}
         />
       </View>
-    </>
+    </SafeAreaView>
   );
 }
 

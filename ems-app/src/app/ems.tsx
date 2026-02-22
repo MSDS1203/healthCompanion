@@ -1,6 +1,7 @@
 import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import React, { useState } from 'react';
 import EmergencyCard from '../components/NameOfEmergencyButton';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function EmergencyScreen() {
@@ -74,7 +75,7 @@ export default function EmergencyScreen() {
 
   if (selectedEmergency) {
     return (
-      <View style={styles.fullScreenContainer}>
+      <SafeAreaView style={styles.fullScreenContainer}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setSelectedEmergency(null)}
@@ -88,7 +89,7 @@ export default function EmergencyScreen() {
             questions={selectedEmergency.questions}
           />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
   return (
