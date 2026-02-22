@@ -17,6 +17,7 @@ export default function EmergencyCard({ name, questions }: EmergencyCardProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [checklistVisible, setChecklistVisible] = useState<boolean>(false);
   const [geminiResponse, setGeminiResponse] = useState<string>("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
 
   const handleAnswer = (questionId: string, answer: string) => {
@@ -73,8 +74,10 @@ export default function EmergencyCard({ name, questions }: EmergencyCardProps) {
       }
 
       {!checklistVisible ?
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>SUBMIT</Text>
+        <TouchableOpacity style={styles.submitButton} onPress={() => {handleSubmit(); setIsSubmitted(true);}}>
+          <Text style={styles.submitButtonText}>
+            {!isSubmitted ? 'SUBMIT' : 'Loading. . .'}
+          </Text>
         </TouchableOpacity>
         : null}
     </View>
