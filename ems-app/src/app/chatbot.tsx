@@ -6,56 +6,84 @@ import Markdown from 'react-native-markdown-display'
 import { FontAwesome } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 
+type Message = {
+  message: string;
+  isUser: boolean;
+}
+
 export default function ChatbotScreen() {
 
-  const { search } = useLocalSearchParams();
+  const { search } = useLocalSearchParams<{ search?: string }>();
+  console.log(search);
 
-  const [responses, setResponses] = useState<string[]>([]);
+  const [responses, setResponses] = useState<Message[]>([]);
+  const [errorIsVisible, setErrorIsVisible] = useState<boolean>(false);
+  const [thinking, setThinking] = useState<boolean>(false);
 
-  const [response, setResponse] = useState("Loading...");
+  async function fetchResponse(query: string) {
+    setErrorIsVisible(false);
+    setThinking(true);
+    try {
+      const userMessage: Message = { message: query, isUser: true };
+      setResponses(prev => [...prev, userMessage]);
+
+      const message = await GeminiChatbot(query);
+      const result: Message = { message: message ?? "", isUser: false };
+      setResponses(prev => [...prev, result ?? ""]);
+
+      setThinking(false);
+    } catch (error) {
+      setErrorIsVisible(true);
+      console.error(error);
+    }
+  }
 
   useEffect(() => {
-    async function fetchResponse() {
-      try {
-        const result = await GeminiChatbot("Tell me more about epileptic episodes.");
-        setResponse(result ?? ""); // assuming GeminiChatbot returns text
-        setResponses(prev => [...prev, result ?? ""]);
-      } catch (error) {
-        setResponse("Hi! How can I assist you today?");
-        console.error(error);
-      }
+    if (search === undefined) {
+      setResponses(prev => [...prev, { message: "Hi! How can I assist you today?", isUser: false }]);
     }
-
-    fetchResponse();
+    else {
+      fetchResponse(search ?? '');
+    }
   }, []);
 
   const [inputValue, setInputValue] = useState('');
 
-  function handleSearch() {
-  }
 
   return (
     <>
       <View style={styles.container}>
         <Text style={styles.title}>AI Medical Consultant</Text>
-        <StatusBar style="auto" />
-        <ScrollView>
-          <View>
-            <Markdown>{response}</Markdown>
-          </View>
-        </ScrollView>
         <FlatList
           data={responses}
-          renderItem={({ index }) =>
-            <View>
-              <Markdown>
-                {response[index]}
-              </Markdown>
-            </View>
-          }
+          renderItem={({ item, index }) => {
+            return(
+              item.isUser
+              ? <View style={styles.user}>
+                <View style={styles.textBubble}>
+                  <Text>Hello!</Text>
+                </View>
+              </View>
+              : <View>
+                <Markdown>
+                  {responses[index].message}
+                </Markdown>
+              </View>
+            );
+          }}
           keyExtractor={index => index.toString()}
           ItemSeparatorComponent={() => <View style={styles.spacer} />}
         />
+        {
+          errorIsVisible
+            ? <Text>I am having difficulty. Please try again.</Text>
+            : null
+        }
+        {
+          thinking
+            ? <Text>Loading. . .</Text>
+            : null
+        }
       </View>
       <View style={styles.searchBar}>
         <FontAwesome name="search" size={24} color="#021552" />
@@ -64,7 +92,10 @@ export default function ChatbotScreen() {
           onChangeText={setInputValue}
           value={inputValue}
           placeholder="Ask your AI medical consultant..."
-          onSubmitEditing={handleSearch}
+          onSubmitEditing={() => { 
+            fetchResponse(inputValue);
+            setInputValue("Ask your AI medical consultant...");
+          }}
         />
       </View>
     </>
@@ -100,6 +131,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f3f5',
     width: '100%',
     padding: 20,
+  },
+  user: {
+    display: 'flex',
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  textBubble: {
+    backgroundColor: 'blue',
+    padding: 20,
+    borderRadius: 20,
+    marginRight: 20,
   },
   spacer: {
     height: 20,

@@ -48,7 +48,7 @@ export default function InfoScreen() {
               onPress={() => {
                 router.push({
                   pathname: "/details",
-                  params: {search: item.search}
+                  params: {search: item.search }
                 });
               }}
             >
