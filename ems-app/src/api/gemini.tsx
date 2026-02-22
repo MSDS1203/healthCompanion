@@ -147,14 +147,13 @@ export async function GeminiDisplay(context: string, retries = 3, delay = 1000) 
     }
 }
 
-export async function generateChecklist(context: string, assessment?: AssessmentAnswers, retries = 3, delay = 1000) {
-    const emergency = getEmergency(context);
-    let selectedSources = allSources;
-    if (emergency !== "unknown") {
-        selectedSources = sources[emergency].join("\n");
-    }
+export async function generateChecklist(assessment?: AssessmentAnswers, retries = 3, delay = 1000) {
+    let selectedSources = allSources; /*
+    if (assessment?.emergencyType !== "unknown") {
+        selectedSources = sources[assessment?.emergencyType].join("\n");
+    } */
 
-    const assessmentSummary = assessment ? buildAssessmentSummary(assessment) : "No structured triage answers provided.";
+    const assessmentSummary: string = assessment ? buildAssessmentSummary(assessment) : "No structured triage answers provided.";
 
     const prompt = `
         You are a certified first-aid assistant generating a STEP-BY-STEP emergency checklist.
@@ -174,9 +173,6 @@ export async function generateChecklist(context: string, assessment?: Assessment
 
         MEDICAL SOURCES:
         ${selectedSources}
-
-        USER DESCRIPTION:
-        ${context}
 
         TRIAGE ASSESSMENT DATA (HIGH PRIORITY):
         ${assessmentSummary}

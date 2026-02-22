@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { FlatList, Platform, KeyboardAvoidingView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
 import { GeminiChatbot } from '../api/gemini';
 import { useEffect, useRef, useState } from 'react';
-import Markdown from 'react-native-markdown-display'
+import Markdown from 'react-native-markdown-display';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';

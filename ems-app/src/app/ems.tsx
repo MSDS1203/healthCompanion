@@ -49,8 +49,8 @@ export default function EmergencyScreen() {
       id: '4', name: "Allergic Reaction", questions: [
         { id: '1', text: 'Is the person unconscious?' },
         { id: '2', text: 'Does the person have a weak or rapid pulse?' },
-        { id: '2', text: 'Does the person have trouble breathing?' },
-        { id: '3', text: 'Does the person have pale, cool and clammy skin?' },
+        { id: '3', text: 'Does the person have trouble breathing?' },
+        { id: '4', text: 'Does the person have pale, cool and clammy skin?' },
       ]
     },
     {
@@ -113,7 +113,6 @@ export default function EmergencyScreen() {
         })}
       </View>
     </SafeAreaView>
-
   );
 }
 
