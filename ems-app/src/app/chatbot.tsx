@@ -1,9 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { GeminiChatbot } from '../api/gemini';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-native-markdown-display'
-import { FontAwesome } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams } from 'expo-router';
 
 type Message = {
@@ -29,11 +29,12 @@ export default function ChatbotScreen() {
 
       const message = await GeminiChatbot(query);
       const result: Message = { message: message ?? "", isUser: false };
-      setResponses(prev => [...prev, result ?? ""]);
+      setResponses(prev => [...prev, result]);
 
       setThinking(false);
     } catch (error) {
       setErrorIsVisible(true);
+      setThinking(false);
       console.error(error);
     }
   }
@@ -47,52 +48,66 @@ export default function ChatbotScreen() {
     }
   }, []);
 
+  // Scroll to end of chat on new message
+  const scrollRef = useRef<FlatList<Message>>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, [responses]);
+
   const [inputValue, setInputValue] = useState('');
 
 
   return (
     <>
-      <View style={styles.container}>
+      <View style={styles.titleBar}>
         <Text style={styles.title}>AI Medical Consultant</Text>
+      </View>
+      <View style={styles.container}>
         <FlatList
           data={responses}
+          ref={scrollRef}
           renderItem={({ item, index }) => {
-            return(
+            return (
               item.isUser
-              ? <View style={styles.user}>
-                <View style={styles.textBubble}>
-                  <Text>Hello!</Text>
+                ? <View style={styles.user}>
+                  <View style={styles.textBubble}>
+                    <Text>{item.message}</Text>
+                    <View style={styles.rightArrow} />
+                    <View style={styles.rightArrowOverlap} />
+                  </View>
                 </View>
-              </View>
-              : <View>
-                <Markdown>
-                  {responses[index].message}
-                </Markdown>
-              </View>
+                : <View>
+                  <Markdown style={{
+                    body: { color: 'white' }
+                  }}
+                  >
+                    {item.message}
+                  </Markdown>
+                </View>
             );
           }}
-          keyExtractor={index => index.toString()}
+          keyExtractor={(_, index) => index.toString()}
           ItemSeparatorComponent={() => <View style={styles.spacer} />}
         />
         {
           errorIsVisible
-            ? <Text>I am having difficulty. Please try again.</Text>
+            ? <Text style={styles.botText}>I am having difficulty. Please try again.</Text>
             : null
         }
         {
           thinking
-            ? <Text>Loading. . .</Text>
+            ? <Text style={styles.botText}>Loading. . .</Text>
             : null
         }
       </View>
       <View style={styles.searchBar}>
-        <FontAwesome name="search" size={24} color="#021552" />
+        <Ionicons name="chatbubble-ellipses" size={24} color="#274C77" />
         <TextInput
           style={styles.input}
           onChangeText={setInputValue}
           value={inputValue}
           placeholder="Ask your AI medical consultant..."
-          onSubmitEditing={() => { 
+          onSubmitEditing={() => {
             fetchResponse(inputValue);
             setInputValue("Ask your AI medical consultant...");
           }}
@@ -105,14 +120,35 @@ export default function ChatbotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#274C77',
     alignItems: 'stretch',
     justifyContent: 'center',
     padding: 30,
   },
   title: {
-    fontSize: 30,
+    color: "#fff",
+    fontSize: 25,
     textAlign: 'center',
+  },
+  titleBar: {
+    backgroundColor: '#6096BA',
+    paddingHorizontal: 30,
+    paddingVertical: 20,
+    // Shadows
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 }, 
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 5, 
+      },
+    }),
+  
+  },
+  botText: {
+    color: '#fff',
   },
   searchBar: {
     display: 'flex',
@@ -120,15 +156,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 10,
-    color: "#021552",
-    backgroundColor: '#f2f3f5',
+    color: "#274C77",
+    backgroundColor: '#E7ECEF',
     padding: 10,
     paddingHorizontal: 30,
   },
   input: {
-    color: "#021552",
+    color: "#274C77",
     fontSize: 15,
-    backgroundColor: '#f2f3f5',
+    backgroundColor: '#E7ECEF',
     width: '100%',
     padding: 20,
   },
@@ -138,10 +174,27 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   textBubble: {
-    backgroundColor: 'blue',
+    backgroundColor: '#E7ECEF',
     padding: 20,
-    borderRadius: 20,
+    borderRadius: 10,
     marginRight: 20,
+  },
+    rightArrow: {
+    position: "absolute",
+    backgroundColor: "#E7ECEF",
+    width: 20,
+    height: 25,
+    bottom: 0,
+    right: -10,
+  },
+  rightArrowOverlap: {
+    position: "absolute",
+    backgroundColor: "#274C77",
+    width: 20,
+    height: 35,
+    bottom: -6,
+    borderBottomLeftRadius: 50,
+    right: -20,
   },
   spacer: {
     height: 20,
