@@ -2,6 +2,11 @@
   "name": "ems-app",
   "version": "1.0.0",
   "main": "expo-router/entry",
+  "expo": {
+    "router": {
+      "appDir": "src/app"
+    }
+  },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,13 +14,20 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@google/genai": "^1.42.0",
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.3.1",
     "babel-preset-expo": "^54.0.10",
     "expo": "~54.0.33",
+    "expo-constants": "~18.0.13",
+    "expo-linking": "~8.0.11",
     "expo-audio": "~1.1.1",
     "expo-av": "~16.0.8",
     "expo-file-system": "~19.0.21",
     "expo-router": "^6.0.23",
     "expo-status-bar": "~3.0.9",
+    "gemini-ai": "^2.2.1",
     "nativewind": "^4.2.2",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "react": "19.1.0",
@@ -27,6 +39,7 @@
     "tailwindcss": "^3.4.19"
   },
   "devDependencies": {
+    "@babel/preset-react": "^7.28.5",
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2"
   },

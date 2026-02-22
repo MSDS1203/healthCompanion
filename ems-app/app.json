@@ -30,11 +30,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
-    "plugins": [
-      "expo-audio"
-    ]
+      "favicon": "./assets/favicon.png"
+    }
   }
 }
