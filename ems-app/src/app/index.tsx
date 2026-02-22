@@ -1,10 +1,19 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Button} from 'react-native';
+import { fetchAudio } from '../api/elevenlabs.mjs';
 
-export default function HomeScreen() {
+export default function ChecklistScreen() {
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+      <Text>Press to play audio</Text>
+
+      <Button
+        title="Play Audio"
+        onPress={() => {
+          fetchAudio();
+        }}
+      />
+
       <StatusBar style="auto" />
     </View>
   );
