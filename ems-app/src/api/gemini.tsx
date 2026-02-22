@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
+
+type AssessmentAnswers = {
+  emergencyType: string; // e.g. "Cardiac Arrest"
+  answers: Record<string, boolean | string>;
+};
 
 const sources = {
     cardiac_arrest: [
@@ -29,34 +33,42 @@ const sources = {
     ]
 };
 
+const allSources = Object.values(sources).flat().join("\n");
+
 const ai = new GoogleGenAI({ apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY || '' });
 
 export async function GeminiChatbot(request: string, retries = 3, delay = 1000) {
+    const emergency = getEmergency(request);
+    let selectedSources = allSources;
+    if (emergency !== "unknown") {
+        selectedSources = sources[emergency].join("\n");
+    }
+
+    const prompt = `
+        You are a certified first-aid assistant.
+        Your job is to converse with users about their questions, comments, or concerns of the selected medical emergency.
+
+        CRITICAL RULES:
+        - Assume that the user does not have any prior medical experience.
+        - Use ONLY the medical sources provided.
+        - Do NOT use outside knowledge.
+        - If information is not in the sources, say "Refer to official medical sources."
+        - Provide concise, safe, medically responsible guidance.
+        - Never give risky speculative advice.
+
+        MEDICAL SOURCES:
+        ${selectedSources}
+
+        USER QUERY:
+        ${request}
+    `
+
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             const response = await ai.models.generateContent({
                 model: "gemini-3-flash-preview",
-                contents: `
-                    You are a certified first-aid assistant.
-
-                    CRITICAL RULES:
-                    - Assume that the user does not have any prior medical experience.
-                    - Use ONLY the medical sources provided.
-                    - Do NOT use outside knowledge.
-                    - If information is not in the sources, say "Refer to official medical sources."
-                    - Provide concise, safe, medically responsible guidance.
-                    - Never give risky speculative advice.
-
-                    Sources:
-                    ${sources}
-
-                    Query:
-                    ${request}
-                `,
+                contents: prompt,
                 config: {
-                    maxOutputTokens: 500,
-                    temperature: 0.1,
-                    topP: 0.8,
                     systemInstruction: `
                         You are a medical first-aid chatbot for an emergency assistance mobile app.
                         Always prioritize safety, clarity, and evidence-based guidance.
@@ -82,17 +94,21 @@ export async function GeminiChatbot(request: string, retries = 3, delay = 1000) 
 
 export async function GeminiDisplay(context: string, retries = 3, delay = 1000) {
     const emergency = getEmergency(context);
-    const selectedSources = sources[emergency].join("\n");
+    let selectedSources = allSources;
+    if (emergency !== "unknown") {
+        selectedSources = sources[emergency].join("\n");
+    }
 
     const prompt = `
         You are a certified first-aid assistant.
+        Your job is to display information to the user on the selected medical emergency.
 
         CRITICAL RULES:
         - Assume that the user does not have any prior medical experience.
         - Use ONLY the medical sources provided.
         - Do NOT use outside knowledge.
         - If information is not in the sources, say "Refer to official medical sources."
-        - Provide concise, safe, medically responsible guidance.
+        - Provide concise, safe, medically responsible information.
         - Never give risky speculative advice.
 
         MEDICAL SOURCES:
@@ -108,13 +124,85 @@ export async function GeminiDisplay(context: string, retries = 3, delay = 1000) 
                 model: "gemini-3-flash-preview",
                 contents: prompt,
                 config: {
-                    maxOutputTokens: 180,
-                    temperature: 0.1,
-                    topP: 0.8,
                     systemInstruction: `
-                        You are a medical first-aid chatbot for an emergency assistance mobile app.
-                        Always prioritize safety, clarity, and evidence-based guidance.
+                        You are a medical first-aid reporter for an emergency assistance mobile app.
+                        Always prioritize safety, clarity, and evidence-based information.
                         Only rely on the provided trusted organizations (AHA, CDC, Red Cross, Mayo Clinic).
+                    `
+                }
+            });
+
+            const aiText = response?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!aiText) return "No response"
+
+            return aiText;
+        } catch (error: any) {
+            if (attempt < retries && error?.message?.includes("503")) {
+                await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, attempt)));
+            } else {
+                throw error;
+            }
+        }
+    }
+}
+
+export async function generateChecklist(context: string, assessment?: AssessmentAnswers, retries = 3, delay = 1000) {
+    const emergency = getEmergency(context);
+    let selectedSources = allSources;
+    if (emergency !== "unknown") {
+        selectedSources = sources[emergency].join("\n");
+    }
+
+    const assessmentSummary = assessment ? buildAssessmentSummary(assessment) : "No structured triage answers provided.";
+
+    const prompt = `
+        You are a certified first-aid assistant generating a STEP-BY-STEP emergency checklist.
+
+        ROLE:
+        - Guide a non-medical bystander helping someone in a medical emergency
+        - Provide clear, numbered, actionable steps
+
+        CRITICAL RULES:
+        - Assume the user has ZERO medical training
+        - Use ONLY the medical sources provided
+        - Do NOT use outside knowledge
+        - Prioritize life-saving actions first (breathing, pulse, consciousness)
+        - If information is not in the sources, say "Refer to official medical sources"
+        - Keep steps short, calm, and easy to follow
+        - No paragraphs, ONLY numbered checklist steps
+
+        MEDICAL SOURCES:
+        ${selectedSources}
+
+        USER DESCRIPTION:
+        ${context}
+
+        TRIAGE ASSESSMENT DATA (HIGH PRIORITY):
+        ${assessmentSummary}
+
+        INSTRUCTIONS:
+        Generate a prioritized emergency checklist based FIRST on the triage data,
+        then the user description.
+`
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await ai.models.generateContent({
+                model: "gemini-3-flash-preview",
+                contents: prompt,
+                config: {
+                    systemInstruction: `
+                        You are a medical first-aid triage assistant for an emergency mobile app.
+                        You MUST prioritize:
+                        1) Unconsciousness
+                        2) Breathing status
+                        3) Pulse
+                        4) Immediate danger
+
+                        If the person is unconscious or not breathing, escalate urgency immediately.
+                        Provide calm, step-by-step, safety-focused instructions.
+                        Only rely on trusted sources (AHA, CDC, Red Cross, Mayo Clinic).
                     `
                 }
             });
@@ -137,11 +225,54 @@ export async function GeminiDisplay(context: string, retries = 3, delay = 1000) 
 function getEmergency(context: string) {
     const c = context.toLowerCase();
 
-    if (c.includes("stroke") || c.includes("fast")) return "stroke";
-    if (c.includes("seizure") || c.includes("epilepsy")) return "seizure";
-    if (c.includes("allergic") || c.includes("anaphylaxis")) return "allergic_reaction";
-    if (c.includes("choking")) return "choking";
-    if (c.includes("cardiac") || c.includes("cpr") || c.includes("heart")) return "cardiac_arrest";
+    const strokeKeywords = ["stroke", "fast", "face drooping", "slurred speech"];
+    const seizureKeywords = ["seizure", "epilepsy", "convulsion", "shaking"];
+    const allergyKeywords = ["allergic", "anaphylaxis", "allergy", "epipen", "hives"];
+    const chokingKeywords = ["choking", "heimlich", "can't breathe", "airway blocked"];
+    const cardiacKeywords = ["cpr", "cardiac", "heart attack", "cardiac arrest", "collapsed", "no pulse"];
+    const bleedingKeywords = ["bleeding", "blood loss", "severe bleeding", "wound"];
+    const concussionKeywords = ["concussion", "head injury", "hit head"];
 
-    return "other";
+    const match = (keywords: string[]) =>
+        keywords.some((keyword) => c.includes(keyword));
+
+    if (match(strokeKeywords)) return "stroke";
+    if (match(seizureKeywords)) return "seizure";
+    if (match(allergyKeywords)) return "allergic_reaction";
+    if (match(chokingKeywords)) return "choking";
+    if (match(cardiacKeywords)) return "cardiac_arrest";
+    if (match(bleedingKeywords) || match(concussionKeywords)) return "other";
+
+    const vagueEmergencyPhrases = [
+        "help",
+        "emergency",
+        "what should i do",
+        "someone collapsed",
+        "not breathing",
+        "unconscious",
+        "medical emergency"
+    ];
+
+    if (match(vagueEmergencyPhrases)) {
+        return "unknown";
+    }
+
+    return "unknown";
+}
+
+function buildAssessmentSummary(assessment: AssessmentAnswers): string {
+  const formattedAnswers = Object.entries(assessment.answers)
+    .map(([key, value]) => `- ${key}: ${value}`)
+    .join("\n");
+
+  return `
+    PATIENT CONDITION ASSESSMENT:
+    Emergency Suspected: ${assessment.emergencyType}
+
+    Observed Symptoms:
+    ${formattedAnswers}
+
+    IMPORTANT:
+    These observations come from a non-medical bystander answering guided triage questions.
+`;
 }
