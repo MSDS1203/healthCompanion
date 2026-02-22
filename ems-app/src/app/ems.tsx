@@ -93,7 +93,7 @@ export default function EmergencyScreen() {
     );
   }
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <SafeAreaView style={styles.fullScreenContainer}>
       <View style={styles.container}>
         {emergencies.map((item, index) => {
           const isLastItem = index === emergencies.length - 1;
@@ -108,25 +108,26 @@ export default function EmergencyScreen() {
           );
         })}
       </View>
-    </ScrollView>
+    </SafeAreaView>
 
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingVertical: 20,
+  fullScreenContainer: {
+    flex: 1,
+    padding: 30,
+    backgroundColor: '#274C77',
   },
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
   },
   cardWrapper: {
     width: '49%',
-    height:'49%',
-    backgroundColor: '#aed6ffff',
+    height:'28%',
+    backgroundColor: '#A3CEF1',
     borderRadius: 12,
     padding: 20,
     marginBottom: 15,
@@ -135,24 +136,21 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
+    backgroundColor: '#E7ECEF',
   },
   cardTitle: {
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 25,
   },
   /* Styles for the "Question Mode" */
-  fullScreenContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
   focusedCard: {
     flex: 1,
     marginTop: 20,
   },
   backButton: {
     padding: 5,
-    backgroundColor: '#0b55a3ff',
+    backgroundColor: '#274C77',
     borderRadius: 5,
     alignSelf: 'flex-start',
   },
