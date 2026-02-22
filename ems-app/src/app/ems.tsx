@@ -1,10 +1,13 @@
-import { ScrollView, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { ScrollView, View, StyleSheet, TouchableOpacity, Text, Pressable, Platform } from 'react-native';
 import React, { useState } from 'react';
 import EmergencyCard from '../components/NameOfEmergencyButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
 
 
 export default function EmergencyScreen() {
+  const router = useRouter();
 
   type Question = {
     id: string;
@@ -75,25 +78,26 @@ export default function EmergencyScreen() {
 
   if (selectedEmergency) {
     return (
-      <SafeAreaView style={styles.fullScreenContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setSelectedEmergency(null)}
-        >
-          <Text style={styles.backButtonText}>← Back to Menu</Text>
-        </TouchableOpacity>
-
-        <View style={styles.focusedCard}>
-          <EmergencyCard
-            name={selectedEmergency.name}
-            questions={selectedEmergency.questions}
-          />
+      <SafeAreaView style={{flex: 1}}>
+        <View style={styles.titleBar}>
+          <Pressable onPress={() => setSelectedEmergency(null)}>
+            <Ionicons name="arrow-back-outline" style={styles.titleIcon} size={30} color="#fff" />
+          </Pressable>
+          <Text style={styles.title}>{selectedEmergency.name}</Text>
+        </View>
+        <View style={styles.fullScreenContainer}>
+          <View style={styles.focusedCard}>
+            <EmergencyCard
+              name={selectedEmergency.name}
+              questions={selectedEmergency.questions}
+            />
+          </View>
         </View>
       </SafeAreaView>
     );
   }
   return (
-      <SafeAreaView style={styles.fullScreenContainer}>
+    <SafeAreaView style={styles.fullScreenContainer}>
       <View style={styles.container}>
         {emergencies.map((item, index) => {
           const isLastItem = index === emergencies.length - 1;
@@ -119,6 +123,35 @@ const styles = StyleSheet.create({
     padding: 30,
     backgroundColor: '#274C77',
   },
+  title: {
+    flex: 1,
+    color: "#fff",
+    fontSize: 25,
+    textAlign: 'center',
+  },
+  titleIcon: {
+    marginRight: 'auto',
+  },
+  titleBar: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#6096BA',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    // Shadows
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -126,7 +159,7 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     width: '49%',
-    height:'28%',
+    height: '28%',
     backgroundColor: '#A3CEF1',
     borderRadius: 12,
     padding: 20,
