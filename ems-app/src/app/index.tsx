@@ -22,6 +22,12 @@ export default function HomeScreen() {
       >
         <Text style={styles.infoFont}>More Information</Text>
       </Pressable>
+      <Pressable 
+        style={styles.moreInfoBtn}
+        onPress={() => {router.push("/chatbot")}}
+      >
+        <Text style={styles.infoFont}>Go to Chatbot</Text>
+      </Pressable>
     </View>
   );
 }
