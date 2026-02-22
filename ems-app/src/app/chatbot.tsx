@@ -1,10 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import { FlatList, Platform, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Platform, KeyboardAvoidingView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
 import { GeminiChatbot } from '../api/gemini';
 import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-native-markdown-display'
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Message = {
@@ -13,6 +13,7 @@ type Message = {
 }
 
 export default function ChatbotScreen() {
+  const router = useRouter();
 
   const { search } = useLocalSearchParams<{ search?: string }>();
   console.log(search);
@@ -65,6 +66,9 @@ export default function ChatbotScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.titleBar}>
+          <Pressable onPress={() => {router.push("/")}}>
+            <Ionicons name="arrow-back-outline" style={styles.titleIcon} size={30} color="#fff" />
+          </Pressable>
           <Text style={styles.title}>AI Medical Consultant</Text>
         </View>
         <View style={styles.container}>
@@ -128,17 +132,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#274C77',
     alignItems: 'stretch',
-    justifyContent: 'center',
     padding: 30,
   },
   title: {
+    flex: 1,
     color: "#fff",
     fontSize: 25,
     textAlign: 'center',
   },
+  titleIcon: {
+    marginRight: 'auto',
+  },
   titleBar: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#6096BA',
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     paddingVertical: 20,
     // Shadows
     ...Platform.select({
@@ -151,7 +162,6 @@ const styles = StyleSheet.create({
         elevation: 5,
       },
     }),
-
   },
   botText: {
     color: '#fff',
